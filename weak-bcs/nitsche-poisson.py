@@ -1,3 +1,9 @@
+"""
+This demo implements both variants of Nitsche's method and the
+weakly-consistent penalty method for the Poisson problem with Dirichlet
+boundary conditions.  
+"""
+
 from dolfin import *
 
 # Parameters:
