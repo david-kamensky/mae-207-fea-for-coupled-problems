@@ -6,8 +6,8 @@ specifying it manually.
 
 from dolfin import *
 
-# Set up meh, function space.
-N = 4
+# Set up mesh, function space.
+N = 16
 mesh = UnitCubeMesh(N,N,N)
 k = 1
 dx = dx(metadata={"quadrature_degree":2*k})
@@ -34,7 +34,7 @@ f = -div(sigma_ex)
 
 # Solve weak problem obtained by differentiating psi:
 u = Function(V)
-sigma,psi = problem(u)
+_,psi = problem(u)
 v = TestFunction(V)
 a = derivative(derivative(psi*dx,u),u)
 L = inner(f,v)*dx

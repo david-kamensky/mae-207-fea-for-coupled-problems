@@ -1,5 +1,5 @@
 """
-Starter code given for Exercise 1 of the section on continuum mechanics.
+Starter code given for Exercise 2 of the section on continuum mechanics.
 """
 
 from dolfin import *
