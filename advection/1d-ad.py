@@ -1,17 +1,20 @@
 """
-The prototypical boundary layer problem with 1D advection--diffusion.
+The prototypical boundary layer problem with 1D advection--diffusion,
+illustrating the effects of SUPG stabilization.
 """
 
 from dolfin import *
 from ufl import Min
 
 # Setup:
-N = 16
+N = 8
 k = 1
+# Setting to False on coarse meshes shows
+# the poor performance of Bubnov--Galerkin.
 use_SUPG = True
-# (Setting kappa too low eventually produces
+# Setting kappa too low eventually produces
 # numerical stability issues in the exact
-# solution.)
+# solution.
 kappa = Constant(5e-3)
 a = Constant((1,))
 
@@ -25,9 +28,11 @@ res_Gal = (kappa*inner(grad(u),grad(v))
            + dot(a,grad(u))*v - f*v)*dx
 res_strong = -div(kappa*grad(u)) + dot(a,grad(u)) - f
 h = CellDiameter(mesh)
-Cinv = Constant(16e0*k*k)
+Cinv = Constant(6.0*k*k)
 # (See the Brooks & Hughes reference for a nodally-
-# exact tau, tuned for this 1D problem.)
+# exact tau, tuned for this 1D problem; we use
+# the more generic result from numerical analysis
+# in this script.)
 tau = Min(h*h/(Cinv*kappa),h/(2*sqrt(dot(a,a))))
 res_SUPG = tau*res_strong*dot(a,grad(v))*dx
 res = res_Gal
@@ -48,7 +53,8 @@ u_ex = Expression("(exp(a*x[0]/k)-1)/(exp(a/k)-1)",
                   degree=ex_deg,domain=mesh,
                   a=float(a[0]),k=float(kappa))
 e = interpolate(uh,FunctionSpace(mesh,"CG",ex_deg))-u_ex
-print(sqrt(assemble(dot(grad(e),grad(e))*dx)))
+print("H1 seminorm error = "
+      +str(sqrt(assemble(dot(grad(e),grad(e))*dx))))
 
 # Plot:
 from matplotlib import pyplot as plt
