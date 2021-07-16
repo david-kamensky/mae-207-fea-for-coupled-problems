@@ -55,13 +55,50 @@ u_ex = Expression("(exp(a*x[0]/k)-1)/(exp(a/k)-1)",
 e = interpolate(uh,FunctionSpace(mesh,"CG",ex_deg))-u_ex
 print("H1 seminorm error = "
       +str(sqrt(assemble(dot(grad(e),grad(e))*dx))))
+print("L2 error = "
+      +str(sqrt(assemble(e*e*dx))))
 
 # Plot:
 from matplotlib import pyplot as plt
 plot(uh)
 # (Put exact solution on refined mesh)
-plot(interpolate(u_ex,
-                 FunctionSpace(UnitIntervalMesh(1000),
-                               "CG",1)))
+mesh_interp = UnitIntervalMesh(1000)
+V_interp = FunctionSpace(mesh_interp,"CG",1)
+u_ex_interp = interpolate(u_ex,V_interp)
+plot(u_ex_interp)
+plt.autoscale()
+plt.show()
+
+# Solve again, using weak BC enforcement:
+
+# Function satifying BCs:
+g = x
+# Penalty constant; must be sufficiently
+# large for stability.
+C_pen = Constant(1e1*k*k)
+# Boundary terms of residual:
+n = FacetNormal(mesh)
+res_weak = (-kappa*dot(grad(u),n)*v
+            - kappa*dot(grad(v),n)*(u-g)
+            + kappa*(C_pen/h)*(u-g)*v
+            - Min(dot(a,n),Constant(0))*(u-g)*v)*ds
+res += res_weak
+
+# No strongly-enforced Dirichlet BCs:
+uh_weak = Function(V)
+solve(lhs(res)==rhs(res),uh_weak)
+
+# Check error:
+e = interpolate(uh_weak,FunctionSpace(mesh,"CG",ex_deg))-u_ex
+print("H1 seminorm error (weak BCs) = "
+      +str(sqrt(assemble(dot(grad(e),grad(e))*dx))))
+print("L2 error (weak BCs) = "
+      +str(sqrt(assemble(e*e*dx))))
+
+# Plot and compare with exact solution
+# and solution with strong BCs:
+plot(uh)
+plot(u_ex_interp)
+plot(uh_weak)
 plt.autoscale()
 plt.show()
