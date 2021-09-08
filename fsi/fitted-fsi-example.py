@@ -245,7 +245,7 @@ res_s = rho_s0*inner(dv_ds - f_s,dv)*dX \
 # Galerkin terms:
 rho_f = Constant(1)
 mu_f = Constant(1e-2)
-sigma_f = 2.0*sym(grad_x(v)) - p*I
+sigma_f = 2.0*mu_f*sym(grad_x(v)) - p*I
 v_adv = v - vhat
 DvDt = dv_dr + dot(grad_x(v),v_adv)
 resGal_f = (rho_f*dot(DvDt,dv) + inner(sigma_f,grad_x(dv))
