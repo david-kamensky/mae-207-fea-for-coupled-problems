@@ -196,9 +196,9 @@ bc0_fs = DirichletBC(W.sub(0), Constant((0.0,0.0)), Walls())
 # in the kinematics described above, but, because the 
 # mesh motion problem has a zero Dirichlet BC on the inflow
 # boundary, there happens to be no difference.
-v_in = Expression(("2.0*sin(pi*t)*x[1]*(H - x[1])/(H*H)",
-                   "0.0"),t=0.0,H=OMEGA_H,degree=2)
-bc1_fs = DirichletBC(W.sub(0), v_in, Inflow())
+v_in = Expression("16.0*sin(pi*t)*x[1]*(H - x[1])/(H*H)",
+                  t=0.0,H=OMEGA_H,degree=2)
+bc1_fs = DirichletBC(W.sub(0).sub(0), v_in, Inflow())
 bc2_fs = DirichletBC(W.sub(1), Constant(0), 
                      SolidDomainInterior())
 bcs_fs = [bc0_fs, bc1_fs, bc2_fs]
