@@ -4,6 +4,10 @@ verified via a manufactured solution.
 """
 
 from dolfin import *
+
+# Whether or not to include stabilization:
+USE_STAB = True
+
 N = 32
 k = 1
 mu = Constant(1.0)
@@ -43,9 +47,15 @@ tau_M = h*h/(Cinv*mu)
 resPSPG = tau_M*inner(strongRes(u,p,f),grad(q))*dx 
 tau_C = h*h/tau_M
 resLSIC = tau_C*div(u)*div(v)*dx
+if(USE_STAB):
+    resStab = resPSPG + resLSIC
+else:
+    # Necessary to avoid singularity of problem
+    # and NaN pressures without PSPG.
+    resStab = Constant(DOLFIN_EPS)*p*q*dx
 
 # Formulation:
-res = resGalerkin + resPSPG + resLSIC
+res = resGalerkin + resStab
 
 up = Function(W)
 solve(lhs(res)==rhs(res),up,bc)
@@ -55,3 +65,9 @@ solve(lhs(res)==rhs(res),up,bc)
 u,p = split(up)
 grad_e = grad(u-u_exact)
 print(sqrt(assemble(inner(grad_e,grad_e)*dx)))
+
+# Visualize pressure; with USE_STAB==False,
+# this shows a checkerboard mode.
+from matplotlib import pyplot as plt
+plot(p)
+plt.show()
