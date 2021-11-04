@@ -21,7 +21,6 @@ udot_exact = diff(u_exact,tv)
 f = udot_exact - div(grad(u_exact))
 F = ((udot-f)*v + dot(grad(u),grad(v)))*dx
 bc = DirichletBC(V,Constant(0.0),"on_boundary")
-uh = Function(V)
 for step in range(0,N):
     t.assign(float(t)+float(Dt))
     solve(lhs(F)==rhs(F),uh,bcs=[bc,])
