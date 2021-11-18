@@ -65,7 +65,6 @@ mesh = generate_mesh(r_Omega, N)
 d = mesh.geometry().dim()
 n = FacetNormal(mesh)
 I = Identity(d)
-h = CellDiameter(mesh)
 
 # Define subdomains for use in boundary condition definitions:
 class Walls(SubDomain):
@@ -79,13 +78,6 @@ class Inflow(SubDomain):
 class Outflow(SubDomain):
     def inside(self, x, on_boundary):
         return (on_boundary and (x[0] > (OMEGA_W - DOLFIN_EPS)))
-class PartialOmega(SubDomain):
-    def inside(self, x, on_boundary):
-        return (on_boundary and 
-                ((x[1] < DOLFIN_EPS) or 
-                 (x[1] > (OMEGA_H - DOLFIN_EPS)) or 
-                 (x[0] < DOLFIN_EPS) or 
-                 (x[0] > (OMEGA_W - DOLFIN_EPS) )))
 class SolidDomainClosure(SubDomain):
     def inside(self, x, on_boundary):
         return (x[0] > SOLID_LEFT - DOLFIN_EPS
