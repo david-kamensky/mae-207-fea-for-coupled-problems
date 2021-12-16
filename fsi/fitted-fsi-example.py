@@ -63,7 +63,7 @@ mesh = generate_mesh(r_Omega, N)
 
 # Mesh-derived quantities:
 d = mesh.geometry().dim()
-n = FacetNormal(mesh)
+n_y = FacetNormal(mesh)
 I = Identity(d)
 
 # Define subdomains for use in boundary condition definitions:
@@ -160,6 +160,7 @@ u_func = Function(V)
 # which is the mesh that FEniCS sees.  
 dX = dx(SOLID_FLAG)
 dy = dx
+ds_y = ds
 grad_y = grad
 grad_X = grad # (Only valid in solid)
 y = SpatialCoordinate(mesh)
@@ -198,7 +199,7 @@ bcs_fs = [bc0_fs, bc1_fs, bc2_fs]
 # BCs for the mesh motion subproblem:
 bc_m_walls = DirichletBC(V.sub(1), Constant(0), Walls())
 bc_m_inflow = DirichletBC(V, Constant(d*(0,)), Inflow())
-bc_m_outflow = DirichletBC(V, Constant(d*(0,)), Outflow())
+bc_m_outflow = DirichletBC(V.sub(0), Constant(0), Outflow())
 bc_m_struct = DirichletBC(V, u_func, SolidDomainClosure())
 bcs_m = [bc_m_struct,bc_m_walls,bc_m_inflow,bc_m_outflow]
 
@@ -264,15 +265,11 @@ tau_C = 1.0/(tr(G)*tau_M)
 resLSIC_f = tau_C*div_x(v)*div_x(dv)*det_dxdy*dy(FLUID_FLAG)
 
 # Stable Neumann BC term, assuming advective 
-# form of material time derivative term:
-v_adv_minus = Min(dot(v_adv,n),Constant(0))
-resOutflow_f = -dot(rho_f*v_adv_minus*dv,v)*ds(OUTFLOW_FLAG)
-
-# Note: On a general deforming mesh, the boundary 
-# integration measure ds would need to be scaled using Nanson's 
-# formula, but, here, the outflow boundary is fixed so we 
-# can directly use the ds measure corresponding to the 
-# reference domain.
+# form of material time derivative term and transforming
+# normal and area element by Nanson's formula:
+dsx_dsy_n_x = det_dxdy*inv(grad_y(x).T)*n_y
+v_adv_minus = Min(dot(v_adv,dsx_dsy_n_x),Constant(0))
+resOutflow_f = -dot(rho_f*v_adv_minus*dv,v)*ds_y(OUTFLOW_FLAG)
 
 # Full fluid residual
 res_f = resGal_f + resSUPG_f + resLSIC_f + resOutflow_f
